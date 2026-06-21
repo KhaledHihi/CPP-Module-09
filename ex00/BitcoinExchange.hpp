@@ -1,19 +1,11 @@
 #pragma once
 
-
-#include <map>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
+#include <map>
+#include <string>
 
-class BitcoinExchange
-{
-    private:
-        std::map<std::string, float> _rates;
-
-    public:
-        BitcoinExchange();
-        ~BitcoinExchange();
-
-        void loadDatabase(const std::string& filename);
-        void processInput(const std::string& filename);
-};
+bool processInput(std::string &line, double &val);
+bool handle_date(std::string &date, std::string &line1);
+void print_the_result(std::map<std::string, float> &data ,std::string &date, double &value);
