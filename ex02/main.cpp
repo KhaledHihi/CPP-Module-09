@@ -2,21 +2,14 @@
 
 int main(int ac, char **av)
 {
-    if (ac < 2)
-    {
-        std::cerr << "Error" << std::endl;
-        return 1;
-    }
-
     try
     {
-        PmergeMe p;
-        p.parseInput(ac, av);
-        p.run();
+        PmergeMe app(ac, av);
+        app.run();
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
-        std::cerr << "Error" << std::endl;
+        std::cerr << e.what() << std::endl;
         return 1;
     }
 
