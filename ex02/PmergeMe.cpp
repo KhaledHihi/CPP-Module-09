@@ -73,19 +73,44 @@ double PmergeMe::sortAndTime(Container &container)
     return end - start;
 }
 
-template <typename container>
-void PmergeMe::checkSorted(const Container &contianer) const
+template <typename Container>
+void PmergeMe::checkSorted(const Container &container) const
 {
     for(size_t i = 1;i < container(); i++)
     {
         if(container[i] < container[i - 1])
-            throw
+            throw std::runtime_error("Error");
     }
 }
+
+void PmergeMe::displayAfter() const
+{
+    std::cout << "After: ";
+    for(size_t i = 0;i < vc.size();i++)
+        std::cout << vc[i] << " ";
+    std::cout << std::endl;
+}
+
+void PmergeMe::displayTiming(double vectorTime, double dequeTime) const
+{
+    std::cout << "Time to process a range of " << vc.size()
+              << " elements with std::vector : "
+              << vectorTime << " us" << std::endl;
+    std::cout << "Time to process a range of " << dq.size()
+              << " elements with std::deque : "
+              << dequeTime << " us" << std::endl;
+}
+
 void PmergeMe::run()
 {
     displayBefore();
 
     double vectorTime = sortAndTime(vc);
     double dequeTime = sortAndTime(dq);
+
+    checkSorted(vc);
+    checkSorted(dq);
+
+    displayAfter();
+    displayTiming(vectorTime, dequeTime);
 }
