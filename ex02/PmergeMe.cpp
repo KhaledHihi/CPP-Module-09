@@ -55,6 +55,109 @@ void    PmergeMe::displayBefore() const
 
 PmergeMe::~PmergeMe() {}
 
+std::vector<size_t> PmergeMe::buildJacobsthalOrder(size_t size) const
+{
+    std::vector<size_t> order;
+    std::vector<bool> used(size, false);
+
+    size_t jacobPrev = 0;
+    size_t jacobCurr = 1;
+
+    while (jacobPrev < size)
+    {
+        size_t limit = jacobCurr;
+
+        if (limit > size)
+            limit = size;
+
+        for (size_t i = limit; i > jacobPrev; i--)
+        {
+            if (!used[i - 1])
+            {
+                order.push_back(i - 1);
+                used[i - 1] = true;
+            }
+        }
+
+        size_t next = jacobCurr + 2 * jacobPrev;
+        jacobPrev = jacobCurr;
+        jacobCurr = next;
+
+        if (jacobCurr == 0)
+            break;
+    }
+
+    for (size_t i = 0; i < size; i++)
+    {
+        if (!used[i])
+            order.push_back(i);
+    }
+
+    return order;
+}
+
+template <typename Container>
+void PmergeMe::mergeInsertSort(Container &container)
+{
+    typedef typename Container::value_type Value;
+
+    if (container.size() < 2)
+        return;
+
+    Container mainChain;
+    std::vector<Value> pending;
+
+    bool hasOdd = false;
+    Value oddValue = Value();
+
+    size_t i = 0;
+    while (i + 1 < container.size())
+    {
+        Value first = container[i];
+        Value second = container[i + 1];
+
+        if (second < first)
+        {
+            mainChain.push_back(first);
+            pending.push_back(second);
+        }
+        else
+        {
+            mainChain.push_back(second);
+            pending.push_back(first);
+        }
+        i += 2;
+    }
+
+    if (i < container.size())
+    {
+        hasOdd = true;
+        oddValue = container[i];
+    }
+
+    mergeInsertSort(mainChain);
+
+    std::vector<size_t> order = buildJacobsthalOrder(pending.size());
+
+    for (size_t j = 0; j < order.size(); j++)
+    {
+        Value value = pending[order[j]];
+        typename Container::iterator pos =
+            std::lower_bound(mainChain.begin(), mainChain.end(), value);
+        mainChain.insert(pos, value);
+    }
+
+    if (hasOdd)
+    {
+        typename Container::iterator pos =
+            std::lower_bound(mainChain.begin(), mainChain.end(), oddValue);
+        mainChain.insert(pos, oddValue);
+    }
+
+    container.clear();
+    container.insert(container.end(), mainChain.begin(), mainChain.end());
+}
+
 double PmergeMe::getCurrentTimeUs() const
 {
     struct timeval time;
@@ -67,18 +170,18 @@ double PmergeMe::getCurrentTimeUs() const
 template <typename Container>
 double PmergeMe::sortAndTime(Container &container)
 {
-    void(container); // don't forget to remove this line;
     double start = getCurrentTimeUs();
+    mergeInsertSort(container);
     double end = getCurrentTimeUs();
     return end - start;
 }
 
 template <typename Container>
-void PmergeMe::checkSorted(const Container &container) const
+void PmergeMe::checkSorted(const Container &the_container) const
 {
-    for(size_t i = 1;i < container(); i++)
+    for(size_t i = 1;i < the_container.size(); i++)
     {
-        if(container[i] < container[i - 1])
+        if(the_container[i] < the_container[i - 1])
             throw std::runtime_error("Error");
     }
 }
