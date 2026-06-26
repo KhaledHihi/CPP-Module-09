@@ -3,7 +3,7 @@
 bool isValideNumber(std::string arg)
 {
     double toDouble;
-    if (arg.empty() || (arg.find_first_not_of("0123456789+") != std::string::npos))
+    if (arg.empty() || (arg.find_first_not_of("0123456789") != std::string::npos))
         return false;
     toDouble = std::strtod(arg.c_str(), 0);
     if (toDouble > std::numeric_limits<int>::max())

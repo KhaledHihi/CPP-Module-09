@@ -47,6 +47,8 @@ bool    processInput(std::string &line, double &val){
         return (std::cerr << "Error: too large a number." << std::endl, false);
     if (val < 0)
         return (std::cerr << "Error: not a positive number." << std::endl, false);
+    if (val != val)
+        return (std::cerr << "Error: bad input => " << line << std::endl, false);
     if (*end != '\0' || isspace(value[0]))
         return (std::cerr << "Error: bad input => " << line << std::endl, false);
     if (date.size() != 10 || date[4] != '-' || date[7] != '-')
