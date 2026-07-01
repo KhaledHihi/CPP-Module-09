@@ -55,42 +55,29 @@ void    PmergeMe::displayBefore() const
 
 PmergeMe::~PmergeMe() {}
 
-std::vector<size_t> PmergeMe::buildJacobsthalOrder(size_t size) const
+std::vector<size_t> PmergeMe::buildJacobsthalOrder(size_t n) const
 {
     std::vector<size_t> order;
-    std::vector<bool> used(size, false);
 
-    size_t jacobPrev = 0;
-    size_t jacobCurr = 1;
+    size_t prev = 1;
+    size_t curr = 1;
+    size_t last = 0;
 
-    while (jacobPrev < size)
+    while (last < n)
     {
-        size_t limit = jacobCurr;
+        size_t limit = curr;
 
-        if (limit > size)
-            limit = size;
+        if (limit > n)
+            limit = n;
 
-        for (size_t i = limit; i > jacobPrev; i--)
-        {
-            if (!used[i - 1])
-            {
-                order.push_back(i - 1);
-                used[i - 1] = true;
-            }
-        }
+        for (size_t i = limit; i > last; i--)
+            order.push_back(i - 1);
 
-        size_t next = jacobCurr + 2 * jacobPrev;
-        jacobPrev = jacobCurr;
-        jacobCurr = next;
+        last = limit;
 
-        if (jacobCurr == 0)
-            break;
-    }
-
-    for (size_t i = 0; i < size; i++)
-    {
-        if (!used[i])
-            order.push_back(i);
+        size_t next = curr + 2 * prev;
+        prev = curr;
+        curr = next;
     }
 
     return order;
@@ -142,8 +129,7 @@ void PmergeMe::mergeInsertSort(Container &container)
     for (size_t j = 0; j < order.size(); j++)
     {
         Value value = pending[order[j]];
-        typename Container::iterator pos =
-            std::lower_bound(mainChain.begin(), mainChain.end(), value);
+        typename Container::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), value);
         mainChain.insert(pos, value);
     }
 
