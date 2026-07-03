@@ -1,10 +1,10 @@
 #include "BitcoinExchange.hpp"
 
-int main(int ac, char* av[])
+int main(int ac, char *av[])
 {
-    if (ac != 2)
+	if (ac != 2)
 		return (std::cerr << "Error: could not open file." << std::endl, 1);
-    else
+	else
 	{
 		std::ifstream inFile("data.csv");
 		if (!inFile.is_open())
@@ -30,8 +30,8 @@ int main(int ac, char* av[])
 		while (std::getline(inFile1, line1))
 		{
 			if (processInput(line1, value))
-				print_the_result(data ,line1, value);
+				print_the_result(data, line1, value);
 		}
-        return 0;
-    }
+		return 0;
+	}
 }

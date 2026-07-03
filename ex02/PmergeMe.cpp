@@ -86,22 +86,20 @@ std::vector<size_t> PmergeMe::buildJacobsthalOrder(size_t n) const
 template <typename Container>
 void PmergeMe::mergeInsertSort(Container &container)
 {
-    typedef typename Container::value_type Value;
-
     if (container.size() < 2)
         return;
 
     Container mainChain;
-    std::vector<Value> pending;
+    std::vector<int> pending;
 
     bool hasOdd = false;
-    Value oddValue = Value();
+    int oddValue = int();
 
     size_t i = 0;
     while (i + 1 < container.size())
     {
-        Value first = container[i];
-        Value second = container[i + 1];
+        int first = container[i];
+        int second = container[i + 1];
 
         if (second < first)
         {
@@ -128,7 +126,7 @@ void PmergeMe::mergeInsertSort(Container &container)
 
     for (size_t j = 0; j < order.size(); j++)
     {
-        Value value = pending[order[j]];
+        int value = pending[order[j]];
         typename Container::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), value);
         mainChain.insert(pos, value);
     }
