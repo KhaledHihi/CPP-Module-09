@@ -126,8 +126,10 @@ void PmergeMe::mergeInsertSort(Container &container)
 
     for (size_t j = 0; j < order.size(); j++)
     {
-        int value = pending[order[j]];
-        typename Container::iterator pos = std::lower_bound(mainChain.begin(), mainChain.end(), value);
+        size_t idx = order[j];
+        int value = pending[idx];
+        typename Container::iterator bound = mainChain.begin() + idx + j + 1;
+        typename Container::iterator pos = std::lower_bound(mainChain.begin(), bound, value);
         mainChain.insert(pos, value);
     }
 
