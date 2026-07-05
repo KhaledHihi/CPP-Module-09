@@ -1,11 +1,14 @@
 #include "PmergeMe.hpp"
 
+size_t g_comparisons = 0;
+
 template <typename Iterator, typename T>
 Iterator countedLowerBound(Iterator first, Iterator last, const T &value)
 {
     while (first < last)
     {
         Iterator middle = first + (last - first) / 2;
+        ++g_comparisons;
         if (*middle < value)
             first = middle + 1;
         else
@@ -116,7 +119,7 @@ void PmergeMe::mergeInsertSort(Container &container)
     {
         int first = container[i];
         int second = container[i + 1];
-
+        ++g_comparisons;
         if (second < first)
         {
             mainChain.push_back(first);
@@ -207,8 +210,13 @@ void PmergeMe::run()
 {
     displayBefore();
 
+    g_comparisons = 0;
     double vectorTime = sortAndTime(vc);
+    std::cout << "Number of comparisons with std::vector : " << g_comparisons << std::endl;
+
+    g_comparisons = 0;
     double dequeTime = sortAndTime(dq);
+    std::cout << "Number of comparisons with std::deque : " << g_comparisons << std::endl;
 
     checkSorted(vc);
     checkSorted(dq);
