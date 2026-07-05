@@ -1,12 +1,11 @@
 #include "PmergeMe.hpp"
 
 template <typename Iterator, typename T>
-Iterator countedLowerBound(Iterator first, Iterator last, const T &value, size_t &count)
+Iterator countedLowerBound(Iterator first, Iterator last, const T &value)
 {
     while (first < last)
     {
         Iterator middle = first + (last - first) / 2;
-        ++count;
         if (*middle < value)
             first = middle + 1;
         else
@@ -100,29 +99,8 @@ std::vector<size_t> PmergeMe::buildJacobsthalOrder(size_t n) const
     return order;
 }
 
-size_t PmergeMe::getComparisonCount(size_t size) const
-{
-    size_t total = 0;
-
-    for (size_t k = 1; k <= size; ++k)
-    {
-        size_t comparisons = 0;
-        size_t threshold = 4;
-
-        while (threshold < 3 * k)
-        {
-            threshold <<= 1;
-            ++comparisons;
-        }
-
-        total += comparisons;
-    }
-
-    return total;
-}
-
 template <typename Container>
-void PmergeMe::mergeInsertSort(Container &container, size_t &comparisonCount)
+void PmergeMe::mergeInsertSort(Container &container)
 {
     if (container.size() < 2)
         return;
@@ -139,7 +117,6 @@ void PmergeMe::mergeInsertSort(Container &container, size_t &comparisonCount)
         int first = container[i];
         int second = container[i + 1];
 
-        ++comparisonCount;
         if (second < first)
         {
             mainChain.push_back(first);
@@ -159,7 +136,7 @@ void PmergeMe::mergeInsertSort(Container &container, size_t &comparisonCount)
         oddValue = container[i];
     }
 
-    mergeInsertSort(mainChain, comparisonCount);
+    mergeInsertSort(mainChain);
 
     std::vector<size_t> order = buildJacobsthalOrder(pending.size());
 
@@ -167,13 +144,13 @@ void PmergeMe::mergeInsertSort(Container &container, size_t &comparisonCount)
     {
         size_t idx = order[j];
         int value = pending[idx];
-        typename Container::iterator pos = countedLowerBound(mainChain.begin(), mainChain.end(), value, comparisonCount);
+        typename Container::iterator pos = countedLowerBound(mainChain.begin(), mainChain.end(), value);
         mainChain.insert(pos, value);
     }
 
     if (hasOdd)
     {
-        typename Container::iterator pos = countedLowerBound(mainChain.begin(), mainChain.end(), oddValue, comparisonCount);
+        typename Container::iterator pos = countedLowerBound(mainChain.begin(), mainChain.end(), oddValue);
         mainChain.insert(pos, oddValue);
     }
 
@@ -190,10 +167,10 @@ double PmergeMe::getCurrentTimeUs() const
 }
 
 template <typename Container>
-double PmergeMe::sortAndTime(Container &container, size_t &comparisonCount)
+double PmergeMe::sortAndTime(Container &container)
 {
     double start = getCurrentTimeUs();
-    mergeInsertSort(container, comparisonCount);
+    mergeInsertSort(container);
     double end = getCurrentTimeUs();
     return end - start;
 }
@@ -226,28 +203,16 @@ void PmergeMe::displayTiming(double vectorTime, double dequeTime) const
               << dequeTime << " us" << std::endl;
 }
 
-void PmergeMe::displayComparisons(size_t vectorComparisons, size_t dequeComparisons) const
-{
-    std::cout << "Number of comparisons with std::vector : "
-              << vectorComparisons << std::endl;
-    std::cout << "Number of comparisons with std::deque : "
-              << dequeComparisons << std::endl;
-}
-
 void PmergeMe::run()
 {
     displayBefore();
 
-    size_t vectorRuntimeComparisons = 0;
-    double vectorTime = sortAndTime(vc, vectorRuntimeComparisons);
-
-    size_t dequeRuntimeComparisons = 0;
-    double dequeTime = sortAndTime(dq, dequeRuntimeComparisons);
+    double vectorTime = sortAndTime(vc);
+    double dequeTime = sortAndTime(dq);
 
     checkSorted(vc);
     checkSorted(dq);
 
     displayAfter();
     displayTiming(vectorTime, dequeTime);
-    displayComparisons(getComparisonCount(vc.size()), getComparisonCount(dq.size()));
 }
