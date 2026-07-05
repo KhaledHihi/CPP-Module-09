@@ -33,15 +33,17 @@ public:
     void displayBefore() const;
     void displayAfter() const;
     void displayTiming(double vectorTime, double dequeTime) const;
+    void displayComparisons(size_t vectorComparisons, size_t dequeComparisons) const;
     void run();
 
     std::vector<size_t> buildJacobsthalOrder(size_t size) const;
+    size_t getComparisonCount(size_t size) const;
 
     template <typename Container>
-    void mergeInsertSort(Container &container);
+    void mergeInsertSort(Container &container, size_t &comparisonCount);
 
     template <typename Container>
-    double sortAndTime(Container &container);
+    double sortAndTime(Container &container, size_t &comparisonCount);
 
     template <typename Container>
     void checkSorted(const Container &container) const;

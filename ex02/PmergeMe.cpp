@@ -1,5 +1,20 @@
 #include "PmergeMe.hpp"
 
+template <typename Iterator, typename T>
+Iterator countedLowerBound(Iterator first, Iterator last, const T &value, size_t &count)
+{
+    while (first < last)
+    {
+        Iterator middle = first + (last - first) / 2;
+        ++count;
+        if (*middle < value)
+            first = middle + 1;
+        else
+            last = middle;
+    }
+    return first;
+}
+
 bool isValideNumber(std::string arg)
 {
     double toDouble;
@@ -18,12 +33,12 @@ PmergeMe::PmergeMe(int ac, char **av)
     std::set<int> seen;
     if (ac <= 1)
         throw std::invalid_argument("Error");
-    for(int i = 1;i < ac; i++)
+    for (int i = 1; i < ac; i++)
     {
-        if(!isValideNumber(av[i]))
+        if (!isValideNumber(av[i]))
             throw std::invalid_argument("Error");
         int value = atoi(av[i]);
-        if(seen.find(value) != seen.end())
+        if (seen.find(value) != seen.end())
             throw std::invalid_argument("Error");
         seen.insert(value);
         vc.push_back(value);
@@ -31,24 +46,24 @@ PmergeMe::PmergeMe(int ac, char **av)
     }
 }
 
-PmergeMe::PmergeMe(const PmergeMe& other)
+PmergeMe::PmergeMe(const PmergeMe &other)
 {
     *this = other;
 }
 
-PmergeMe& PmergeMe::operator=(const PmergeMe& other)
+PmergeMe &PmergeMe::operator=(const PmergeMe &other)
 {
-    if(this != &other)
+    if (this != &other)
     {
         vc = other.vc;
         dq = other.dq;
     }
     return *this;
 }
-void    PmergeMe::displayBefore() const
+void PmergeMe::displayBefore() const
 {
     std::cout << "Before: ";
-    for(size_t i = 0;i < vc.size();i++)
+    for (size_t i = 0; i < vc.size(); i++)
         std::cout << vc[i] << " ";
     std::cout << std::endl;
 }
@@ -59,14 +74,17 @@ std::vector<size_t> PmergeMe::buildJacobsthalOrder(size_t n) const
 {
     std::vector<size_t> order;
 
+    if (n == 0)
+        return order;
+    order.push_back(0);
+
     size_t prev = 1;
     size_t curr = 1;
-    size_t last = 0;
+    size_t last = 1;
 
     while (last < n)
     {
         size_t limit = curr;
-
         if (limit > n)
             limit = n;
 
@@ -74,7 +92,6 @@ std::vector<size_t> PmergeMe::buildJacobsthalOrder(size_t n) const
             order.push_back(i - 1);
 
         last = limit;
-
         size_t next = curr + 2 * prev;
         prev = curr;
         curr = next;
@@ -83,8 +100,29 @@ std::vector<size_t> PmergeMe::buildJacobsthalOrder(size_t n) const
     return order;
 }
 
+size_t PmergeMe::getComparisonCount(size_t size) const
+{
+    size_t total = 0;
+
+    for (size_t k = 1; k <= size; ++k)
+    {
+        size_t comparisons = 0;
+        size_t threshold = 4;
+
+        while (threshold < 3 * k)
+        {
+            threshold <<= 1;
+            ++comparisons;
+        }
+
+        total += comparisons;
+    }
+
+    return total;
+}
+
 template <typename Container>
-void PmergeMe::mergeInsertSort(Container &container)
+void PmergeMe::mergeInsertSort(Container &container, size_t &comparisonCount)
 {
     if (container.size() < 2)
         return;
@@ -101,6 +139,7 @@ void PmergeMe::mergeInsertSort(Container &container)
         int first = container[i];
         int second = container[i + 1];
 
+        ++comparisonCount;
         if (second < first)
         {
             mainChain.push_back(first);
@@ -120,7 +159,7 @@ void PmergeMe::mergeInsertSort(Container &container)
         oddValue = container[i];
     }
 
-    mergeInsertSort(mainChain);
+    mergeInsertSort(mainChain, comparisonCount);
 
     std::vector<size_t> order = buildJacobsthalOrder(pending.size());
 
@@ -128,15 +167,13 @@ void PmergeMe::mergeInsertSort(Container &container)
     {
         size_t idx = order[j];
         int value = pending[idx];
-        typename Container::iterator bound = mainChain.begin() + idx + j + 1;
-        typename Container::iterator pos = std::lower_bound(mainChain.begin(), bound, value);
+        typename Container::iterator pos = countedLowerBound(mainChain.begin(), mainChain.end(), value, comparisonCount);
         mainChain.insert(pos, value);
     }
 
     if (hasOdd)
     {
-        typename Container::iterator pos =
-            std::lower_bound(mainChain.begin(), mainChain.end(), oddValue);
+        typename Container::iterator pos = countedLowerBound(mainChain.begin(), mainChain.end(), oddValue, comparisonCount);
         mainChain.insert(pos, oddValue);
     }
 
@@ -149,15 +186,14 @@ double PmergeMe::getCurrentTimeUs() const
     struct timeval time;
 
     gettimeofday(&time, NULL);
-    return static_cast<double>(time.tv_sec) * 1000000.0
-         + static_cast<double>(time.tv_usec);
+    return static_cast<double>(time.tv_sec) * 1000000.0 + static_cast<double>(time.tv_usec);
 }
 
 template <typename Container>
-double PmergeMe::sortAndTime(Container &container)
+double PmergeMe::sortAndTime(Container &container, size_t &comparisonCount)
 {
     double start = getCurrentTimeUs();
-    mergeInsertSort(container);
+    mergeInsertSort(container, comparisonCount);
     double end = getCurrentTimeUs();
     return end - start;
 }
@@ -165,9 +201,9 @@ double PmergeMe::sortAndTime(Container &container)
 template <typename Container>
 void PmergeMe::checkSorted(const Container &the_container) const
 {
-    for(size_t i = 1;i < the_container.size(); i++)
+    for (size_t i = 1; i < the_container.size(); i++)
     {
-        if(the_container[i] < the_container[i - 1])
+        if (the_container[i] < the_container[i - 1])
             throw std::runtime_error("Error");
     }
 }
@@ -175,7 +211,7 @@ void PmergeMe::checkSorted(const Container &the_container) const
 void PmergeMe::displayAfter() const
 {
     std::cout << "After: ";
-    for(size_t i = 0;i < vc.size();i++)
+    for (size_t i = 0; i < vc.size(); i++)
         std::cout << vc[i] << " ";
     std::cout << std::endl;
 }
@@ -190,16 +226,28 @@ void PmergeMe::displayTiming(double vectorTime, double dequeTime) const
               << dequeTime << " us" << std::endl;
 }
 
+void PmergeMe::displayComparisons(size_t vectorComparisons, size_t dequeComparisons) const
+{
+    std::cout << "Number of comparisons with std::vector : "
+              << vectorComparisons << std::endl;
+    std::cout << "Number of comparisons with std::deque : "
+              << dequeComparisons << std::endl;
+}
+
 void PmergeMe::run()
 {
     displayBefore();
 
-    double vectorTime = sortAndTime(vc);
-    double dequeTime = sortAndTime(dq);
+    size_t vectorRuntimeComparisons = 0;
+    double vectorTime = sortAndTime(vc, vectorRuntimeComparisons);
+
+    size_t dequeRuntimeComparisons = 0;
+    double dequeTime = sortAndTime(dq, dequeRuntimeComparisons);
 
     checkSorted(vc);
     checkSorted(dq);
 
     displayAfter();
     displayTiming(vectorTime, dequeTime);
+    displayComparisons(getComparisonCount(vc.size()), getComparisonCount(dq.size()));
 }
