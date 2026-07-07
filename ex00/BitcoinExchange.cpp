@@ -31,6 +31,7 @@ bool    handle_date(std::string &date, std::string &line)
     line = date;
     return true;
 }
+
 bool    processInput(std::string &line, double &val){
     size_t pos;
     std::string date;
@@ -56,13 +57,12 @@ bool    processInput(std::string &line, double &val){
     double year = std::strtod(str.c_str(), NULL);
     if(year >  std::numeric_limits<double>::max() || year < 0)
         return (std::cerr << "Error: bad input => " << line << std::endl, false);
-    int len = date.size();
-    std::cout << "len: " << len << std::endl;
+    size_t len = date.size();
     if (len < 10 && date[len - 3] == '-' && date[len - 6] == '-')
         return (std::cerr << "Error: bad input => " << line << std::endl, false);
     for (size_t i = 0; date[i]; i++)
     {
-        if (i == 4 || i == 7)
+        if (i == len - 6 || i == len - 3)
             continue;
         else if (date[i] < '0' || date[i] > '9')
             return (std::cerr << "Error: bad input => " << line << std::endl, false);
