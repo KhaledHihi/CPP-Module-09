@@ -51,7 +51,14 @@ bool    processInput(std::string &line, double &val){
         return (std::cerr << "Error: bad input => " << line << std::endl, false);
     if (*end != '\0' || isspace(value[0]))
         return (std::cerr << "Error: bad input => " << line << std::endl, false);
-    if (date.size() != 10 || date[4] != '-' || date[7] != '-')
+    std::string::size_type n = date.find_first_not_of("0123456789");
+    std::string str = date.substr(0, n);
+    double year = std::strtod(str.c_str(), NULL);
+    if(year >  std::numeric_limits<double>::max() || year < 0)
+        return (std::cerr << "Error: bad input => " << line << std::endl, false);
+    int len = date.size();
+    std::cout << "len: " << len << std::endl;
+    if (len < 10 && date[len - 3] == '-' && date[len - 6] == '-')
         return (std::cerr << "Error: bad input => " << line << std::endl, false);
     for (size_t i = 0; date[i]; i++)
     {
