@@ -1,10 +1,10 @@
 #include "BitcoinExchange.hpp"
 
-bool    handle_date(std::string &date, std::string &line)
+bool    handle_date(std::string &date, std::string &line, size_t len)
 {
-     int year = atoi(date.substr(0, 4).c_str());
-    int month = atoi(date.substr(5, 2).c_str());
-    int day = atoi(date.substr(8, 2).c_str());
+     int year = atoi(date.substr(0, len - 6).c_str());
+    int day = atoi(date.substr(len - 2, 2).c_str());
+    int month = atoi(date.substr(len - 5, 2).c_str());
 
     if (date < "2009-01-03")
 	    return (std::cerr << "Error: btc did not exist in this date => " << line << std::endl, false);
@@ -67,7 +67,7 @@ bool    processInput(std::string &line, double &val){
         else if (date[i] < '0' || date[i] > '9')
             return (std::cerr << "Error: bad input => " << line << std::endl, false);
     }
-   return (handle_date(date, line));
+   return (handle_date(date, line, len));
 }
 
 void    print_the_result(std::map<std::string, float> &data ,std::string &date, double &value){
